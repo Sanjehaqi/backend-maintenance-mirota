@@ -1,6 +1,6 @@
 # 🏭 Backend Maintenance & Sparepart Management - PT Mirota KSM
 
-Sistem *backend* berbasis REST API yang dikembangkan untuk manajemen data *sparepart* dan pemeliharaan mesin di lingkungan operasional **PT Mirota KSM**. Proyek ini dibangun sebagai bagian dari program Magang dan Studi Independen Bersertifikat (MBKM).
+Sistem *backend* berbasis REST API yang dikembangkan untuk manajemen data *sparepart* dan pemeliharaan mesin di lingkungan operasional **PT Mirota KSM**. Proyek ini dibangun sebagai bagian dari program Magang (MBKM).
 
 ---
 
