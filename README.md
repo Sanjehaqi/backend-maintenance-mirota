@@ -15,8 +15,8 @@ Sistem *backend* berbasis REST API yang dikembangkan untuk manajemen data *spare
 
 ## 👥 Tim Kolaborasi (Fullstack Integration)
 Proyek ini dikembangkan secara kolaboratif dengan pembagian peran *fullstack*:
-* **Backend & Database:** [Sanjehaqi] ([Repository Backend Ini](https://github.com/Sanjehaqi/backend-maintenance-mirota))
-* **Frontend Dashboard:** [setdans] ([Repository Frontend](https://github.com/username-teman/repository-frontend))
+* **Backend & Database:** Sanjehaqi ([Repository Backend Ini](https://github.com/Sanjehaqi/backend-maintenance-mirota))
+* **Frontend Dashboard:** Setdans ([Repository Frontend](https://github.com/username-teman/repository-frontend))
 * **Live Web App:** [Dashboard Vercel Utama](https://dashboard-mirota.vercel.app)
 
 ---
