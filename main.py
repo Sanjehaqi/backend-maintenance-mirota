@@ -118,3 +118,80 @@ def sparepart_kritikal():
         return {"pesan": "Berhasil mengambil sparepart kritikal", "data": hasil}
     except Exception as e:
         return {"pesan": "Gagal mengambil sparepart kritikal", "error": str(e), "data": []}
+
+
+# 8. Ambil daftar supplier
+@app.get("/api/supplier")
+def ambil_data_supplier():
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM supplier")
+        hasil = cursor.fetchall()
+        koneksi.close()
+        return {"pesan": "Berhasil mengambil data supplier", "data": hasil}
+    except Exception as e:
+        return {"pesan": "Gagal mengambil data supplier", "error": str(e), "data": []}
+
+
+# 9. Ambil semua log downtime (join biar nama mesin muncul)
+@app.get("/api/downtime")
+def ambil_downtime():
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor(dictionary=True)
+        query = """
+            SELECT dl.id_downtime, m.nama_mesin, dl.tanggal, dl.durasi_jam,
+                   dl.keterangan, dl.dicatat_oleh
+            FROM downtime_log dl
+            JOIN mesin m ON dl.id_mesin = m.id_mesin
+            ORDER BY dl.tanggal DESC
+        """
+        cursor.execute(query)
+        hasil = cursor.fetchall()
+        koneksi.close()
+        return {"pesan": "Berhasil mengambil data downtime", "data": hasil}
+    except Exception as e:
+        return {"pesan": "Gagal mengambil data downtime", "error": str(e), "data": []}
+
+
+# 10. Ambil semua jadwal perawatan (join biar nama mesin muncul)
+@app.get("/api/jadwal-perawatan")
+def ambil_jadwal_perawatan():
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor(dictionary=True)
+        query = """
+            SELECT jp.id_jadwal, m.nama_mesin, jp.tanggal_perawatan,
+                   jp.deskripsi, jp.status
+            FROM jadwal_perawatan jp
+            JOIN mesin m ON jp.id_mesin = m.id_mesin
+            ORDER BY jp.tanggal_perawatan ASC
+        """
+        cursor.execute(query)
+        hasil = cursor.fetchall()
+        koneksi.close()
+        return {"pesan": "Berhasil mengambil jadwal perawatan", "data": hasil}
+    except Exception as e:
+        return {"pesan": "Gagal mengambil jadwal perawatan", "error": str(e), "data": []}
+
+
+# 11. Ambil jadwal yang jatuh BESOK (buat notifikasi H-1)
+@app.get("/api/jadwal-perawatan/reminder")
+def reminder_jadwal_besok():
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor(dictionary=True)
+        query = """
+            SELECT jp.id_jadwal, m.nama_mesin, jp.tanggal_perawatan, jp.deskripsi
+            FROM jadwal_perawatan jp
+            JOIN mesin m ON jp.id_mesin = m.id_mesin
+            WHERE jp.tanggal_perawatan = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+              AND jp.status = 'Terjadwal'
+        """
+        cursor.execute(query)
+        hasil = cursor.fetchall()
+        koneksi.close()
+        return {"pesan": "Berhasil mengambil reminder jadwal besok", "data": hasil}
+    except Exception as e:
+        return {"pesan": "Gagal mengambil reminder", "error": str(e), "data": []}
