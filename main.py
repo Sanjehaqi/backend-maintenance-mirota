@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import mysql.connector
 
 app = FastAPI()
@@ -195,3 +196,40 @@ def reminder_jadwal_besok():
         return {"pesan": "Berhasil mengambil reminder jadwal besok", "data": hasil}
     except Exception as e:
         return {"pesan": "Gagal mengambil reminder", "error": str(e), "data": []}
+
+
+# ---- Struktur data yang dikirim frontend saat submit form "Log Pemakaian Part" ----
+class PemakaianRequest(BaseModel):
+    id_mesin: int
+    id_sparepart: int
+    quantity: int
+    pic_name: str
+
+
+# 12. Catat pemakaian part + otomatis kurangi stok gudang
+@app.post("/api/pemakaian")
+def catat_pemakaian(data: PemakaianRequest):
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor()
+
+        # 1. Simpan riwayat pemakaian
+        cursor.execute(
+            """
+            INSERT INTO riwayat_pemakaian (id_mesin, id_sparepart, tanggal, qty_terpakai, dicatat_oleh)
+            VALUES (%s, %s, CURDATE(), %s, %s)
+            """,
+            (data.id_mesin, data.id_sparepart, data.quantity, data.pic_name)
+        )
+
+        # 2. Kurangi stok fisik di stok_gudang
+        cursor.execute(
+            "UPDATE stok_gudang SET qty_stok = qty_stok - %s WHERE id_sparepart = %s",
+            (data.quantity, data.id_sparepart)
+        )
+
+        koneksi.commit()
+        koneksi.close()
+        return {"pesan": "Berhasil mencatat pemakaian part dan mengurangi stok"}
+    except Exception as e:
+        return {"pesan": "Gagal mencatat pemakaian", "error": str(e)}
