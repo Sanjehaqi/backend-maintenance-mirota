@@ -198,12 +198,12 @@ def reminder_jadwal_besok():
         return {"pesan": "Gagal mengambil reminder", "error": str(e), "data": []}
 
 
-# ---- Struktur data yang dikirim frontend saat submit form "Log Pemakaian Part" ----
+# ---- Struktur data SESUAI yang dikirim frontend (mesin_id, part_number, qty, pic) ----
 class PemakaianRequest(BaseModel):
-    id_mesin: int
-    id_sparepart: int
-    quantity: int
-    pic_name: str
+    mesin_id: int
+    part_number: str
+    qty: int
+    pic: str
 
 
 # 12. Catat pemakaian part + otomatis kurangi stok gudang
@@ -213,19 +213,27 @@ def catat_pemakaian(data: PemakaianRequest):
         koneksi = mysql.connector.connect(**db_config)
         cursor = koneksi.cursor()
 
+        # 0. Cari id_sparepart dari part_number yang dikirim frontend
+        cursor.execute("SELECT id_sparepart FROM sparepart WHERE part_number = %s", (data.part_number,))
+        row = cursor.fetchone()
+        if row is None:
+            koneksi.close()
+            return {"pesan": f"Gagal: part_number '{data.part_number}' tidak ditemukan di database"}
+        id_sparepart = row[0]
+
         # 1. Simpan riwayat pemakaian
         cursor.execute(
             """
             INSERT INTO riwayat_pemakaian (id_mesin, id_sparepart, tanggal, qty_terpakai, dicatat_oleh)
             VALUES (%s, %s, CURDATE(), %s, %s)
             """,
-            (data.id_mesin, data.id_sparepart, data.quantity, data.pic_name)
+            (data.mesin_id, id_sparepart, data.qty, data.pic)
         )
 
         # 2. Kurangi stok fisik di stok_gudang
         cursor.execute(
             "UPDATE stok_gudang SET qty_stok = qty_stok - %s WHERE id_sparepart = %s",
-            (data.quantity, data.id_sparepart)
+            (data.qty, id_sparepart)
         )
 
         koneksi.commit()
