@@ -241,3 +241,33 @@ def catat_pemakaian(data: PemakaianRequest):
         return {"pesan": "Berhasil mencatat pemakaian part dan mengurangi stok"}
     except Exception as e:
         return {"pesan": "Gagal mencatat pemakaian", "error": str(e)}
+
+
+# ---- Struktur data sesuai yang dikirim frontend (mesin_id, durasi_jam, keterangan, pic) ----
+class DowntimeRequest(BaseModel):
+    mesin_id: int
+    durasi_jam: float
+    keterangan: str
+    pic: str
+
+
+# 13. Catat downtime baru dari dashboard
+@app.post("/api/downtime")
+def catat_downtime(data: DowntimeRequest):
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO downtime_log (id_mesin, tanggal, durasi_jam, keterangan, dicatat_oleh)
+            VALUES (%s, CURDATE(), %s, %s, %s)
+            """,
+            (data.mesin_id, data.durasi_jam, data.keterangan, data.pic)
+        )
+
+        koneksi.commit()
+        koneksi.close()
+        return {"pesan": "Berhasil mencatat downtime"}
+    except Exception as e:
+        return {"pesan": "Gagal mencatat downtime", "error": str(e)}
