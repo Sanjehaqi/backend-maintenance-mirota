@@ -2,6 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+# Memuat file .env untuk konfigurasi rahasia
+load_dotenv()
 
 app = FastAPI()
 
@@ -13,12 +18,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Konfigurasi kunci brankas MySQL
+# Konfigurasi kunci brankas MySQL (mengambil data dari file .env)
 db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "db_maintenance"
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "database": os.getenv("DB_NAME", "db_maintenance")
 } 
 
 # 1. Cek apakah server menyala
@@ -272,9 +277,6 @@ def catat_downtime(data: DowntimeRequest):
     except Exception as e:
         return {"pesan": "Gagal mencatat downtime", "error": str(e)}
 
-    # =====================================================
-# TAMBAHKAN INI KE main.py (di paling bawah file)
-# =====================================================
 
 # ---- Struktur data yang dikirim frontend saat submit form "Tambah Supplier" ----
 class SupplierRequest(BaseModel):
@@ -305,13 +307,10 @@ def tambah_supplier(data: SupplierRequest):
     except Exception as e:
         return {"pesan": "Gagal menambahkan supplier", "error": str(e)}
 
-    
-    # =====================================================
-# TAMBAHAN ENDPOINT: Update Realisasi & Status Jadwal Perawatan
-# =====================================================
 
+# ---- Struktur data update jadwal perawatan ----
 class UpdateJadwalRequest(BaseModel):
-    tanggal_aktual: str  # Format: "YYYY-MM-DD" yang diinput dari date picker frontend
+    tanggal_aktual: str  # Format: "YYYY-MM-DD"
     status: str          # Contoh: 'Selesai'
 
 
@@ -322,7 +321,6 @@ def update_jadwal_perawatan(id_jadwal: int, data: UpdateJadwalRequest):
         koneksi = mysql.connector.connect(**db_config)
         cursor = koneksi.cursor()
 
-        # Update tanggal perawatan menjadi tanggal riil pengerjaan dan ubah status jadi Selesai
         cursor.execute(
             """
             UPDATE jadwal_perawatan 
