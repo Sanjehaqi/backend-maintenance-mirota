@@ -1,1 +1,13 @@
+# Konfigurasi database rahasia
+.env
+
+# Folder sampah Python
+__pycache__/
+*.pyc
+
+# File data mentah / Excel / CSV lokal
+*.xlsx
+*.csv
+
+# File aplikasi lain
 cloudflared.exe
