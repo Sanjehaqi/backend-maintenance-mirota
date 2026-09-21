@@ -271,3 +271,69 @@ def catat_downtime(data: DowntimeRequest):
         return {"pesan": "Berhasil mencatat downtime"}
     except Exception as e:
         return {"pesan": "Gagal mencatat downtime", "error": str(e)}
+
+    # =====================================================
+# TAMBAHKAN INI KE main.py (di paling bawah file)
+# =====================================================
+
+# ---- Struktur data yang dikirim frontend saat submit form "Tambah Supplier" ----
+class SupplierRequest(BaseModel):
+    nama_supplier: str
+    kontak: str
+    email: str = None
+    alamat: str = None
+
+
+# 14. Tambah data supplier baru dari dashboard
+@app.post("/api/supplier")
+def tambah_supplier(data: SupplierRequest):
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO supplier (nama_supplier, kontak, email, alamat)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (data.nama_supplier, data.kontak, data.email, data.alamat)
+        )
+
+        koneksi.commit()
+        koneksi.close()
+        return {"pesan": "Berhasil menambahkan supplier baru"}
+    except Exception as e:
+        return {"pesan": "Gagal menambahkan supplier", "error": str(e)}
+
+    
+    # =====================================================
+# TAMBAHAN ENDPOINT: Update Realisasi & Status Jadwal Perawatan
+# =====================================================
+
+class UpdateJadwalRequest(BaseModel):
+    tanggal_aktual: str  # Format: "YYYY-MM-DD" yang diinput dari date picker frontend
+    status: str          # Contoh: 'Selesai'
+
+
+# 15. Update jadwal perawatan saat dikerjakan (mengisi tanggal aktual & ubah status jadi Selesai)
+@app.put("/api/jadwal-perawatan/{id_jadwal}")
+def update_jadwal_perawatan(id_jadwal: int, data: UpdateJadwalRequest):
+    try:
+        koneksi = mysql.connector.connect(**db_config)
+        cursor = koneksi.cursor()
+
+        # Update tanggal perawatan menjadi tanggal riil pengerjaan dan ubah status jadi Selesai
+        cursor.execute(
+            """
+            UPDATE jadwal_perawatan 
+            SET tanggal_perawatan = %s, status = %s 
+            WHERE id_jadwal = %s
+            """,
+            (data.tanggal_aktual, data.status, id_jadwal)
+        )
+
+        koneksi.commit()
+        koneksi.close()
+        return {"pesan": "Berhasil memperbarui jadwal perawatan dan mencatat tanggal aktual"}
+    except Exception as e:
+        return {"pesan": "Gagal memperbarui jadwal perawatan", "error": str(e)}
