@@ -284,6 +284,7 @@ class SupplierRequest(BaseModel):
     kontak: str
     email: str = None
     alamat: str = None
+    keterangan: str = None
 
 
 # 14. Tambah data supplier baru dari dashboard
@@ -295,10 +296,10 @@ def tambah_supplier(data: SupplierRequest):
 
         cursor.execute(
             """
-            INSERT INTO supplier (nama_supplier, kontak, email, alamat)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO supplier (nama_supplier, kontak, email, alamat, keterangan)
+            VALUES (%s, %s, %s, %s, %s)
             """,
-            (data.nama_supplier, data.kontak, data.email, data.alamat)
+            (data.nama_supplier, data.kontak, data.email, data.alamat, data.keterangan)
         )
 
         koneksi.commit()
